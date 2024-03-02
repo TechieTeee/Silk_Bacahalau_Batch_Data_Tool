@@ -1,0 +1,4 @@
+
+#!/usr/bin/env sh
+
+node /workspace/Silk_Bacahalau_Batch_Data_Tool/ceramic-app/node_modules/.bin/ceramic "$@"

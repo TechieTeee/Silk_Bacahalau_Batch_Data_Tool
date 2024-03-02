@@ -14,7 +14,6 @@ print(f"Memory usage before conversion: {psutil.Process().memory_info().rss / 10
 table = pa.Table.from_pandas(df)
 
 # Write to Parquet with Snappy compression
-# Assuming you meant to use the 'parquet' module from 'pyarrow'
 pa.parquet.write_table(table, "output.parquet", compression="snappy")
 
 # Print memory usage after conversion
