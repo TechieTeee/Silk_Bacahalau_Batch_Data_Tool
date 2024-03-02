@@ -1,3 +1,12 @@
+import pandas as pd
+import pyarrow as pa
+from pyarrow import parquet
+from flask import Flask, render_template, request
+import psutil
+from google.colab import files
+import psutil
+import io
+
 # Upload CSV file using Colab's uploader
 uploaded = files.upload()
 
