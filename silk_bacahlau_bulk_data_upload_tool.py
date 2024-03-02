@@ -1,25 +1,17 @@
-# -*- coding: utf-8 -*-
 import pandas as pd
 import pyarrow as pa
-from pyarrow import parquet
-from flask import Flask, render_template, request
-import psutil
 from google.colab import files
-import psutil
 import io
+from ceramic import Client, DID
+from ceramic.stream import StreamType
 
-# Commented out IPython magic to ensure Python compatibility.
-!command -v bacalhau >/dev/null 2>&1 || (export BACALHAU_INSTALL_DIR=.; curl -sL https://get.bacalhau.org/install.sh | bash)
-path=!echo $PATH
-# %env PATH=./:{path[0]}
+# Connect to Ceramic (replace with your credentials)
+ceramic = Client("http://localhost:7507", DID.from_seed("YOUR_SEED"))
 
-!curl -sL https://get.bacalhau.org/install.sh | bash
-
-!pip install fastavro
-
-!pip install numpy
-
-!pip install pyarrow
+# Function to upload Parquet file to ComposeDB
+def upload_to_compose_db(file_data, stream_id):
+    stream = ceramic.create_stream(StreamType.BLOB, content=file_data)
+    ceramic.update_stream(stream_id, content=stream.commit_id)
 
 # Upload CSV file using Colab's uploader
 uploaded = files.upload()
@@ -37,8 +29,18 @@ print(f"Memory usage before conversion: {psutil.Process().memory_info().rss / 10
 table = pa.Table.from_pandas(df)
 
 # Write to Parquet with Snappy compression
-# Assuming you meant to use the 'parquet' module from 'pyarrow'
-pa.parquet.write_table(table, "output.parquet", compression="snappy")
+parquet_buffer = io.BytesIO()
+pa.parquet.write_table(table, parquet_buffer, compression="snappy")
+
+# Get the compressed Parquet file content
+parquet_data = parquet_buffer.getvalue()
+
+# Replace "your-stream-id" with the actual stream ID
+stream_id = "your-stream-id"
+
+# Upload Parquet file to ComposeDB
+upload_to_compose_db(parquet_data, stream_id)
 
 # Print memory usage after conversion
 print(f"Memory usage after conversion: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
+print("Parquet file uploaded to ComposeDB!")
